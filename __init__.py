@@ -17,8 +17,8 @@ from bpy.types import (Panel,
 bl_info = {
     "name": "Quick Fbx",
     "description": "One button. One Fbx. Boom. It's that simple.",
-    "author": "Blendfx, Jonas Dichelle",
-    "version": (0, 0, 1),
+    "author": "Blendfx, Jonas Dichelle, Simeon Conzendorf",
+    "version": (0, 0, 2),
     "blender": (2, 80, 0),
     "location": "Properties > Scene",
     "category": "Export"
@@ -31,7 +31,8 @@ class FbxProps(PropertyGroup):
         default="",
         maxlen=1024,
         subtype='DIR_PATH'
-    )
+    )    
+    my_bool: bpy.props.BoolProperty(name="Option which does nothing yet")
 
 def main(context):
     blendpath = Path(bpy.data.filepath)
@@ -39,8 +40,13 @@ def main(context):
         absolute = Path(bpy.path.abspath(context.scene.fbx_props.fbx_path))
         fbxpath = Path(context.scene.fbx_props.fbx_path) / Path(blendpath).stem
     else:
-        fbxpath = Path(blendpath).parent / Path(blendpath).stem
-    bpy.ops.export_scene.fbx(filepath=str(fbxpath) + "_export.fbx",
+        filename = str(Path(blendpath).parent / Path(blendpath).stem)
+        print("hello")
+        print(type(filename))
+        fbxpath = filename.replace(".","")
+        fbxpath = fbxpath+".fbx"
+        
+    bpy.ops.export_scene.fbx(filepath=str(fbxpath),
         check_existing=True,
         filter_glob="*.fbx",
         use_selection=False,
@@ -102,6 +108,7 @@ class Quick_fbx_panel(Panel):
         scene = context.scene
         layout.operator("wm.quick_fbx")
         layout.prop(props, "fbx_path", expand=True)
+        layout.prop(props, "my_bool", expand=True)
 
 def register():
     bpy.utils.register_class(QuickFBX)
