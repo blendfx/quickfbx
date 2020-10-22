@@ -35,7 +35,7 @@ class FbxProps(PropertyGroup):
     b_forceKeys: bpy.props.BoolProperty(name="force start/end keyframes")
     b_activeCol: bpy.props.BoolProperty(name="active colection",default=False)
     b_leaveBones: bpy.props.BoolProperty(name="add leave bones",default=False)
-    b_filenameIsCollection: bpy.props.BoolProperty(name="name file like collection",default=false)
+    b_filenameIsCollection: bpy.props.BoolProperty(name="name file like collection",default=False)
 
 def main(context):
     blendpath = Path(bpy.data.filepath)
