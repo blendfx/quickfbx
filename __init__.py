@@ -39,27 +39,31 @@ class FbxProps(PropertyGroup):
 
 def main(context):
     blendpath = Path(bpy.data.filepath)
-    print ("blendpath " + str(blendpath))    
-    filename = str (Path(blendpath).stem)
+    print ("blendpath: " + str(blendpath))
     
-    if context.scene.fbx_props.fbx_path:        
-        fbxpath = str(Path(bpy.path.abspath(context.scene.fbx_props.fbx_path)) / Path(blendpath).stem)        
-        print ("abolute: "+fbxpath)
-    else:
-        fbxpath = str(Path(blendpath).parent / Path(blendpath).stem)        
-        fbxpath = fbxpath.replace(".","")
-        print("relative "+fbxpath)
-    
+    parentPath = blendpath.parent
+    print ("parent: "+str(parentPath))
+        
+    filename = str (blendpath.stem)
+    filename = filename.replace(".","")
+    print ("file " + filename)    
+        
     if context.scene.fbx_props.b_activeCol:
         collectionName = context.view_layer.active_layer_collection.name
         
         if context.scene.fbx_props.b_filenameIsCollection:
-            fbxpath = fbxpath.replace(filename,collectionName)
+            filename = collectionName
         else:
-            fbxpath = fbxpath+"_"+collectionName
+            filename = filename+"_"+collectionName
+    
+    if context.scene.fbx_props.fbx_path:        
+        fbxpath = str(Path(bpy.path.abspath(context.scene.fbx_props.fbx_path)) / Path(filename))
+        print ("abolute: "+fbxpath)
+    else:
+        fbxpath = str(parentPath / Path(filename))
+        print("relative "+fbxpath)    
 
-    fbxpath = fbxpath+".fbx"
-    print(fbxpath +" "+filename)    
+    fbxpath = fbxpath+".fbx"    
         
     bpy.ops.export_scene.fbx(filepath=str(fbxpath),
         check_existing=True,
