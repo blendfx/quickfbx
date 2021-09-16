@@ -76,7 +76,8 @@ def apply_obj_rotation(obj=None):
     new_matrix = Matrix.Translation(loc) @ scale_matrix
 
     # apply the rotation on a mesh level
-    obj.data.transform(rot_matrix)
+    if obj.data is not None:
+        obj.data.transform(rot_matrix)
 
     # set the clean matrix
     obj.matrix_world = new_matrix
@@ -87,7 +88,18 @@ def apply_obj_rotation(obj=None):
         obj.matrix_world = child_matrix
     
     bpy.context.view_layer.update()
-    
+
+def apply_obj_modifiers(obj=None):
+    # https://blender.community/c/rightclickselect/xcfbbc/?sorting=hot
+    if obj.data is not None:
+        dg = bpy.context.view_layer.depsgraph
+        dg.update()
+        eval_obj = obj.evaluated_get(dg)
+        someMesh = bpy.data.meshes.new_from_object(eval_obj, depsgraph=dg)
+
+        obj.modifiers.clear()
+        obj.data = someMesh
+
 def recursivlely_apply_children(obj=None):
     """recursively go trough every child and apply transform"""
     if obj.children == ():
@@ -173,8 +185,11 @@ class QuickFBX(bpy.types.Operator):
         print(objects_to_export)
         print(parent_objs)
 
-        # do rotation stuff just on parents
+        # apply the modifiers first
+        for obj in objects_to_export:
+            apply_obj_modifiers(obj=obj)
 
+        # do rotation stuff just on parents
         for obj in parent_objs:
             # UNITY fix 180° aka axels issue
             # (x should stay same and positive)
