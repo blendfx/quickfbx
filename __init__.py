@@ -91,14 +91,19 @@ def apply_obj_rotation(obj=None):
 
 def apply_obj_modifiers(obj=None):
     # https://blender.community/c/rightclickselect/xcfbbc/?sorting=hot
-    if obj.data is not None:
-        dg = bpy.context.view_layer.depsgraph
-        dg.update()
-        eval_obj = obj.evaluated_get(dg)
-        someMesh = bpy.data.meshes.new_from_object(eval_obj, depsgraph=dg)
+    if obj.type == 'MESH':
+        modifiers = [mod.type for mod in obj.modifiers]
+        print(modifiers)
+        if not 'ARMATURE' in modifiers:
+            # objects with armature werden einfach ignoriert -> später vlt alle modifier bis auf die armature anwenden?
+            if obj.data is not None:
+                dg = bpy.context.view_layer.depsgraph
+                dg.update()
+                eval_obj = obj.evaluated_get(dg)
+                applied_mesh = bpy.data.meshes.new_from_object(eval_obj, depsgraph=dg)
 
-        obj.modifiers.clear()
-        obj.data = someMesh
+                obj.modifiers.clear()
+                obj.data = applied_mesh
 
 def recursivlely_apply_children(obj=None):
     """recursively go trough every child and apply transform"""
@@ -173,7 +178,7 @@ class QuickFBX(bpy.types.Operator):
         elif context.scene.fbx_props.b_selectedObjs and context.scene.fbx_props.b_activeCol:
             selected_collection_objects = []
             for obj in [obj for obj in bpy.context.view_layer.active_layer_collection.collection.objects]:
-                if obj in selected_objects:
+                if obj in bpy.context.selected_objects:
                     selected_collection_objects.append(obj)
             objects_to_export = selected_collection_objects
         else:
@@ -216,7 +221,7 @@ class QuickFBX(bpy.types.Operator):
             use_active_collection=context.scene.fbx_props.b_activeCol,
             global_scale=1.0,
             apply_unit_scale=True,
-            apply_scale_options='FBX_SCALE_NONE', # was FBX_SCALE_ALLFBX_SCALE_ALL - why was that? -> FBX_SCALE_NONE is needed, to have 0 rotaion on import in unity
+            apply_scale_options='FBX_SCALE_ALL', # was FBX_SCALE_ALL - why was that? -> FBX_SCALE_NONE is needed, to have 0 rotaion on import in unity
             bake_space_transform=False,
             object_types={'ARMATURE', 'EMPTY', 'MESH', 'OTHER'},
             use_mesh_modifiers=True,
