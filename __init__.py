@@ -76,7 +76,7 @@ def apply_obj_rotation(obj=None):
     new_matrix = Matrix.Translation(loc) @ scale_matrix
 
     # apply the rotation on a mesh level
-    if obj.data is not None:
+    if obj.data is not None and obj.type == 'MESH':
         obj.data.transform(rot_matrix)
 
     # set the clean matrix
@@ -190,26 +190,35 @@ class QuickFBX(bpy.types.Operator):
         print(objects_to_export)
         print(parent_objs)
 
-        # apply the modifiers first
+        # apply the modifiers and rotations first
         for obj in objects_to_export:
             apply_obj_modifiers(obj=obj)
+            apply_obj_rotation(obj=obj)
+
+        # parent the parent objects to the unity_center_empty
+        if bpy.data.objects.get("unity_center_empty") == None:
+            unity_center_empty = bpy.data.objects.new("unity_center_empty", None)
+            bpy.context.scene.collection.objects.link(unity_center_empty)
+        else:
+            unity_center_empty = bpy.data.objects["unity_center_empty"]
+        for obj in parent_objs:
+            obj.parent = unity_center_empty
 
         # do rotation stuff just on parents
-        for obj in parent_objs:
-            # UNITY fix 180° aka axels issue
-            # (x should stay same and positive)
-            # (y and z should swap, but also stay positive)
-            rotate_obj(obj=obj, rot=[0,0,180])
-            apply_obj_rotation(obj=obj)
-            # look for childrens and also apply transform
-            recursivlely_apply_children(obj=obj)
+        # UNITY fix 180° aka axels issue
+        # (x should stay same and positive)
+        # (y and z should swap, but also stay positive)
+        rotate_obj(obj=unity_center_empty, rot=[0,0,180])
+        apply_obj_rotation(obj=unity_center_empty)
+        # look for childrens and also apply transform
+        recursivlely_apply_children(obj=unity_center_empty)
 
-            # UNITY fix -89.99° issue
-            rotate_obj(obj=obj, rot=[-90,0,0])
-            apply_obj_rotation(obj=obj)
-            # # look for childrens and also apply transform
-            recursivlely_apply_children(obj=obj)
-            rotate_obj(obj=obj, rot=[90,0,0])
+        # UNITY fix -89.99° issue
+        rotate_obj(obj=unity_center_empty, rot=[-90,0,0])
+        apply_obj_rotation(obj=unity_center_empty)
+        # # look for childrens and also apply transform
+        recursivlely_apply_children(obj=unity_center_empty)
+        rotate_obj(obj=unity_center_empty, rot=[90,0,0])
 
         bpy.ops.ed.undo_push(message="after_export_changes")
 
