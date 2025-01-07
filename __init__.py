@@ -36,6 +36,7 @@ class FbxProps(PropertyGroup):
     b_activeCol: bpy.props.BoolProperty(name="active colection",default=False)
     b_leaveBones: bpy.props.BoolProperty(name="add leave bones",default=False)
     b_filenameIsCollection: bpy.props.BoolProperty(name="name file like collection",default=False)
+    b_applyTransform: bpy.props.BoolProperty(name="Apply Transform",default=False)
 
 def main(context):
     blendpath = Path(bpy.data.filepath)
@@ -73,7 +74,7 @@ def main(context):
         global_scale=1.0,
         apply_unit_scale=True,
         apply_scale_options='FBX_SCALE_ALL',
-        bake_space_transform=False,
+        bake_space_transform=context.scene.fbx_props.b_applyTransform,
         object_types={'ARMATURE', 'EMPTY', 'MESH', 'OTHER'},
         use_mesh_modifiers=True,
         use_mesh_modifiers_render=True,
@@ -130,7 +131,8 @@ class Quick_fbx_panel(Panel):
         layout.prop(props, "b_forceKeys", expand=True)
         layout.prop(props, "b_activeCol", expand=True)
         layout.prop(props, "b_leaveBones", expand=True)
-        layout.prop(props, "b_filenameIsCollection", expand=True)       
+        layout.prop(props, "b_filenameIsCollection", expand=True)
+        layout.prop(props, "b_applyTransform", expand=True)              
         
 
 def register():
